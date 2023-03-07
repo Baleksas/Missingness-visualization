@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="./styles.css"
+      type="text/css"
+      media="screen"
+      charset="utf-8"
+    />
+
+    <title>Document</title>
+  </head>
+  <script src="https://d3js.org/d3.v6.js"></script>
+  <body>
+    <div class="flex-container">
+      <div class="flex-item">
+        <button onclick="update(false)">Show complete rows</button>
+        <button onclick="update(true, true)">Show rows with missing</button>
+
+        <button onclick="update()">Show all</button>
+        <button onclick="remove()">Remove</button>
+        <label for="columns">Choose a column:</label>
+
+        <select
+          onchange="update(true, false , true)"
+          name="columns"
+          id="columnsSelection"
+        >
+          <option value="" disabled selected>Select your option</option>
+        </select>
+        <div id="my_dataviz"></div>
+      </div>
+    </div>
+  </body>
+  <script>
+    // set the dimensions and margins of the graph
+    const margin = { top: 30, right: 10, bottom: 10, left: 0 },
+      width = 1200 - margin.left - margin.right,
+      height = 400 - margin.top - margin.bottom;
+
+    // append the svg object to the body of the page
+    const svg = d3
+      .select("#my_dataviz")
+      .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // create a tooltip
+    var Tooltip = d3
+      .select("#my_dataviz")
+      .append("div")
+      .style("opacity", 0)
+      .attr("class", "tooltip")
+      .style("background-color", "white")
+      .style("border", "solid")
+      .style("border-width", "2px")
+      .style("border-radius", "5px")
+      .style("padding", "5px");
+
+    // Functions
+    // Selected column
+    const columnSelected = (reset = false) => {
+      column = document.getElementById("columnsSelection");
+      if (reset) {
+        column.selectedIndex = 0;
+        return;
+      }
+      return column.value;
+    };
+    // Clean up svg
+    function remove() {
+      svg.selectAll("*").remove();
+    }
+
+    function update(
+      complete = true,
+      missingOnly = false,
+      specificColumn = false
+    ) {
+      remove();
+      // reset selection
+      if (!specificColumn) {
+        console.log("resetting");
+        columnSelected(true);
+      }
+
+      // Parse the Data
+      d3.csv("/datasets/brittleness-index.csv").then(function (data) {
+        // Extract the list of dimensions we want to keep in the plot. Here I keep all except the column called Species
+        dimensions = Object.keys(data[0]).filter(function (d) {
+          // TODO: implement future to make filter out columns wanted
+          return d;
+        });
+        select = document.getElementById("columnsSelection");
+
+        // If select hasn't been populated yet, populate it
+        console.log(select.children.length);
+        if (select.children.length === 1)
+          for (i of dimensions) {
+            var opt = document.createElement("option");
+            opt.value = i;
+            opt.innerHTML = i;
+            select.appendChild(opt);
+          }
+        // For each dimension, I build a linear scale. I store all in a y object
+        const y = {};
+        for (i in dimensions) {
+          name = dimensions[i];
+          y[name] = d3
+            .scaleLinear()
+            .domain(
+              d3.extent(data, function (d) {
+                // console.log(+d[name]);
+                return +d[name];
+              })
+            )
+            .range([height, 0]);
+        }
+
+        // Hide missing data
+        function removeMissing() {
+          return data.filter((d) => {
+            var isNull = false;
+            dimensions.map(function (p) {
+              if (y[p](d[p]) === undefined) {
+                isNull = true;
+              }
+            });
+            return !isNull;
+          });
+        }
+        // Build the X scale -> it find the best position for each Y axis
+        x = d3.scalePoint().range([0, width]).padding(1).domain(dimensions);
+
+        // The path function take a row of the csv as input, and return x and y coordinates of the line to draw for this raw.
+        // Making coordinates of missing values to negative to be out displayed out of figure instead of being displayed at 0
+        function path(d) {
+          return d3.line()(
+            dimensions
+              // .filter(function (p) {
+              //   // if specific column selected, additional rules apply
+              //   if (
+              //     specificColumn &&
+              //     p !== columnSelected() &&
+              //     y[p](d[p]) === undefined
+              //   ) {
+              //     console.log(columnSelected());
+              //     return false;
+              //   }
+              //   return true;
+              // })
+              .map(function (p) {
+                if (y[p](d[p]) === undefined) {
+                  return [x(p), -20];
+                }
+                return [x(p), y[p](d[p])];
+              })
+          );
+        }
+
+        const hasNullValue = (d) => {
+          var isNull = false;
+          nullArray = [];
+          dimensions.map(function (p) {
+            if (y[p](d[p]) === undefined) {
+              isNull = true;
+              nullArray.push(p);
+            }
+          });
+          return [isNull, nullArray];
+        };
+        //mouse functions
+        var mouseover = function (d) {
+          Tooltip.style("opacity", 1);
+          d3.select(this).style("stroke", "black").style("opacity", 1);
+        };
+        var mousemove = function (event, d) {
+          Tooltip.html("Data: " + JSON.stringify(d))
+            .style("left", d3.pointer(event)[0] + 70 + "px")
+            .style("top", d3.pointer(event)[1] + "px");
+        };
+        var mouseleave = function (d) {
+          Tooltip.style("opacity", 0);
+          d3.select(this)
+            .style("stroke", (d) =>
+              hasNullValue(d)[0]
+                ? complete
+                  ? "red"
+                  : null
+                : missingOnly
+                ? null
+                : "#69b3a2"
+            )
+            .style("opacity", 0.8);
+        };
+        // Handmade legend
+        svg
+          .append("circle")
+          .attr("cx", 30)
+          .attr("cy", 60)
+          .attr("r", 6)
+          .style("fill", "#69b3a2");
+        svg
+          .append("circle")
+          .attr("cx", 30)
+          .attr("cy", 90)
+          .attr("r", 6)
+          .style("fill", "red");
+        svg
+          .append("text")
+          .attr("x", 40)
+          .attr("y", 60)
+          .text("Complete rows")
+          .style("font-size", "12px")
+          .attr("alignment-baseline", "middle");
+        svg
+          .append("text")
+          .attr("x", 40)
+          .attr("y", 90)
+          .text("Rows with missing value(s)")
+          .style("font-size", "12px")
+          .attr("alignment-baseline", "middle");
+
+        // Draw the lines
+        svg
+          .selectAll("myPath")
+          .data(data)
+          .join("path")
+          .attr("d", path)
+          .style("fill", "none")
+          .style("opacity", 0.5)
+          // Making stroke color depending if row has missing value or not
+          .style("stroke", (d) => {
+            // "Filtering" out if there is specific column selected. It makes rows with missing values in other but selected column
+            // to be null
+            if (
+              specificColumn &&
+              !hasNullValue(d)[1].includes(columnSelected())
+            ) {
+              return null;
+            }
+            return hasNullValue(d)[0]
+              ? complete
+                ? "red"
+                : null
+              : missingOnly
+              ? null
+              : "#69b3a2";
+          })
+          .on("mouseover", mouseover)
+          .on("mousemove", mousemove)
+          .on("mouseleave", mouseleave);
+
+        // Draw the axis:
+        svg
+          .selectAll("myAxis")
+          // For each dimension of the dataset I add a 'g' element:
+          .data(dimensions)
+          .enter()
+          .append("g")
+          // I translate this element to its right position on the x axis
+          .attr("transform", function (d) {
+            return "translate(" + x(d) + ")";
+          })
+          // And I build the axis with the call function
+          .each(function (d) {
+            d3.select(this).call(d3.axisLeft().scale(y[d]));
+          })
+
+          // Add axis title
+          .append("text")
+          .style("text-anchor", "middle")
+          .attr("y", -9)
+          .text(function (d) {
+            return d;
+          })
+          .style("fill", "black");
+      });
+    }
+  </script>
+</html>

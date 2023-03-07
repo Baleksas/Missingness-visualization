@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="volume-series"></div>
+  </body>
+  <script>
+    const bars = d3
+      .select("#volume-series")
+      .selectAll(".vol")
+      .data(this.currentData, (d) => d["date"]);
+
+    bars
+      .enter()
+      .append("rect")
+      .attr("class", "vol")
+      .merge(bars)
+      .transition()
+      .duration(750)
+      .attr("x", (d) => this.xScale(d["date"]))
+      .attr("y", (d) => yVolumeScale(d["volume"]))
+      .attr("fill", (d, i) => {
+        if (i === 0) {
+          return "#03a678";
+        } else {
+          // green bar if price is rising during that period, and red when price is falling
+          return this.currentData[i - 1].close > d.close
+            ? "#c0392b"
+            : "#03a678";
+        }
+      })
+      .attr("width", 1)
+      .attr("height", (d) => this.height - yVolumeScale(d["volume"]));
+  </script>
+</html>
