@@ -12,7 +12,7 @@
       charset="utf-8"
     />
 
-    <title>Document</title>
+    <title>Pararel Coordinates</title>
   </head>
   <script src="https://d3js.org/d3.v6.js"></script>
   <body>
@@ -181,9 +181,9 @@
           d3.select(this).style("stroke", "black").style("opacity", 1);
         };
         var mousemove = function (event, d) {
-          Tooltip.html("Data: " + JSON.stringify(d))
-            .style("left", d3.pointer(event)[0] + 70 + "px")
-            .style("top", d3.pointer(event)[1] + "px");
+          Tooltip.html("Data: " + JSON.stringify(d));
+          // .style("left", d3.pointer(event)[0] + 70 + "px")
+          // .style("top", d3.pointer(event)[1] + "px");
         };
         var mouseleave = function (d) {
           Tooltip.style("opacity", 0);

@@ -4,7 +4,14 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <link
+      rel="stylesheet"
+      href="./styles.css"
+      type="text/css"
+      media="screen"
+      charset="utf-8"
+    />
+    <title>Matrix plot</title>
   </head>
   <script src="https://d3js.org/d3.v6.js"></script>
 
@@ -48,8 +55,19 @@
       // Color scale: give me a specie name, I return a color
       const color = d3
         .scaleOrdinal()
-        .domain(["setosa", "versicolor", "virginica"])
-        .range(["#402D54", "#D18975", "#8FD175"]);
+        // .domain(["setosa", "versicolor", "virginica"])
+        .range([
+          "#1f77b4",
+          "#ff7f0e",
+          "#2ca02c",
+          "#d62728",
+          "#9467bd",
+          "#8c564b",
+          "#e377c2",
+          "#7f7f7f",
+          "#bcbd22",
+          "#17becf",
+        ]);
 
       // ------------------------------- //
       // Add charts
@@ -123,7 +141,39 @@
             .append("g")
             .call(d3.axisLeft(y2).ticks(0))
             .attr("transform", `translate(${-mar * 0.5},0)`);
-
+          // mouse functions and tooltip
+          var Tooltip = d3
+            .select("#my_dataviz")
+            .append("div")
+            .style("opacity", 0)
+            .attr("class", "tooltip")
+            .style("background-color", "white")
+            .style("border", "solid")
+            .style("border-width", "2px")
+            .style("border-radius", "5px")
+            .style("padding", "5px");
+          var mouseover = function (d) {
+            Tooltip.style("opacity", 1);
+            d3.select(this).style("stroke", "black").style("opacity", 1);
+          };
+          var mousemove = function (event, d) {
+            console.log("event.x", event.x);
+            Tooltip.html("Data: " + JSON.stringify(d))
+              .style("left", event.x + "px")
+              .style("top", event.y + "px");
+          };
+          var mouseleave = function (d) {
+            Tooltip.style("opacity", 0);
+            d3.select(this)
+              .style("stroke", (d) => {
+                if (x(+d[var1]) === undefined && y(+d[var2]) === undefined)
+                  return "black";
+                else if (x(+d[var1]) === undefined || y(+d[var2]) === undefined)
+                  return "red";
+                return color(d.Species);
+              })
+              .style("opacity", 0.8);
+          };
           // Add circle
           tmp
             .selectAll("myCircles")
@@ -144,7 +194,10 @@
               else if (x(+d[var1]) === undefined || y(+d[var2]) === undefined)
                 return "red";
               return color(d.Species);
-            });
+            })
+            .on("mouseover", mouseover)
+            .on("mousemove", mousemove)
+            .on("mouseleave", mouseleave);
         }
       }
 
