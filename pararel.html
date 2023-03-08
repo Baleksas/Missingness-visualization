@@ -185,9 +185,14 @@
           d3.select(this).style("stroke", "black").style("opacity", 1);
         };
         var mousemove = function (event, d) {
-          Tooltip.html("Data: " + JSON.stringify(d));
-          // .style("left", d3.pointer(event)[0] + 70 + "px")
-          // .style("top", d3.pointer(event)[1] + "px");
+          let jsonStringified = JSON.stringify(d);
+          jsonStringified = jsonStringified.replace(/{/g, "");
+          jsonStringified = jsonStringified.replace(/}/g, "");
+          jsonStringified = jsonStringified.replace(/"/g, "");
+
+          Tooltip.html("Data: " + jsonStringified)
+            .style("left", d3.pointer(event)[0] + 70 + "px")
+            .style("top", d3.pointer(event)[1] + 70 + "px");
         };
         var mouseleave = function (d) {
           Tooltip.style("opacity", 0);

@@ -14,7 +14,7 @@
     <title>Matrix plot</title>
   </head>
   <script src="https://d3js.org/d3.v6.js"></script>
-
+  <script src="utils.js"></script>
   <body>
     <div class="navigation">
       <a href="./visualization.html">Back</a>
@@ -160,10 +160,11 @@
             d3.select(this).style("stroke", "black").style("opacity", 1);
           };
           var mousemove = function (event, d) {
-            console.log("event.x", event.x);
-            Tooltip.html("Data: " + JSON.stringify(d))
+            prepareData(d);
+
+            Tooltip.html("Data: " + prepareData(d))
               .style("left", event.x + "px")
-              .style("top", event.y + "px");
+              .style("top", event.pageY + "px");
           };
           var mouseleave = function (d) {
             Tooltip.style("opacity", 0);
