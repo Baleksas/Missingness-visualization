@@ -45,7 +45,11 @@ p {
     align-items: center;
   }
 }
-
+/* navigation */
+.navigation a {
+  text-decoration: none;
+  color: white;
+}
 /* chart styling */
 a {
   color: #67809f;
