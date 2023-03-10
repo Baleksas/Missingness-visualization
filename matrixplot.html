@@ -15,6 +15,8 @@
   </head>
   <script src="https://d3js.org/d3.v6.js"></script>
   <script src="utils.js"></script>
+  <script src="const.js"></script>
+
   <body>
     <div class="navigation">
       <a href="./visualization.html">Back</a>
@@ -34,8 +36,7 @@
       .attr("height", sizeWhole + marginWhole.top + marginWhole.bottom)
       .append("g")
       .attr("transform", `translate(${marginWhole.left},${marginWhole.top})`);
-
-    d3.csv("./datasets/iris.csv").then(function (data) {
+    d3.csv(DATAFRAME_URL).then(function (data) {
       dimensions = Object.keys(data[0]).filter((d) => d !== "Species");
       console.log(data);
       // What are the numeric variables in this dataset? How many do I have

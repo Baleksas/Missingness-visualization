@@ -15,6 +15,9 @@
     <title>Pararel Coordinates</title>
   </head>
   <script src="https://d3js.org/d3.v6.js"></script>
+  <script src="utils.js"></script>
+  <script src="const.js"></script>
+
   <body>
     <div class="navigation">
       <a href="./visualization.html">Back</a>
@@ -43,8 +46,8 @@
   <script>
     // set the dimensions and margins of the graph
     const margin = { top: 30, right: 10, bottom: 10, left: 0 },
-      width = 1200 - margin.left - margin.right,
-      height = 400 - margin.top - margin.bottom;
+      width = 1400 - margin.left - margin.right,
+      height = 600 - margin.top - margin.bottom;
 
     // append the svg object to the body of the page
     const svg = d3
@@ -90,21 +93,20 @@
       remove();
       // reset selection
       if (!specificColumn) {
-        console.log("resetting");
         columnSelected(true);
       }
 
       // Parse the Data
-      d3.csv("/datasets/brittleness-index.csv").then(function (data) {
+      d3.csv(DATAFRAME_URL).then(function (data) {
         // Extract the list of dimensions we want to keep in the plot. Here I keep all except the column called Species
         dimensions = Object.keys(data[0]).filter(function (d) {
           // TODO: implement future to make filter out columns wanted
+          return d != "Species";
           return d;
         });
         select = document.getElementById("columnsSelection");
 
         // If select hasn't been populated yet, populate it
-        console.log(select.children.length);
         if (select.children.length === 1)
           for (i of dimensions) {
             var opt = document.createElement("option");
@@ -132,7 +134,11 @@
           return data.filter((d) => {
             var isNull = false;
             dimensions.map(function (p) {
-              if (y[p](d[p]) === undefined) {
+              if (
+                y[p](d[p]) === undefined ||
+                y[p](d[p]) === "na" ||
+                y[p](d[p]) === null
+              ) {
                 isNull = true;
               }
             });
@@ -146,33 +152,28 @@
         // Making coordinates of missing values to negative to be out displayed out of figure instead of being displayed at 0
         function path(d) {
           return d3.line()(
-            dimensions
-              // .filter(function (p) {
-              //   // if specific column selected, additional rules apply
-              //   if (
-              //     specificColumn &&
-              //     p !== columnSelected() &&
-              //     y[p](d[p]) === undefined
-              //   ) {
-              //     console.log(columnSelected());
-              //     return false;
-              //   }
-              //   return true;
-              // })
-              .map(function (p) {
-                if (y[p](d[p]) === undefined) {
-                  return [x(p), -20];
-                }
-                return [x(p), y[p](d[p])];
-              })
+            dimensions.map(function (p) {
+              if (
+                y[p](d[p]) === undefined ||
+                y[p](d[p]) === "na" ||
+                y[p](d[p]) === null
+              ) {
+                return [x(p), -10];
+              }
+              return [x(p), y[p](d[p])];
+            })
           );
         }
 
         const hasNullValue = (d) => {
           var isNull = false;
-          nullArray = [];
+          var nullArray = [];
           dimensions.map(function (p) {
-            if (y[p](d[p]) === undefined) {
+            if (
+              y[p](d[p]) === undefined ||
+              y[p](d[p]) === "na" ||
+              y[p](d[p]) === null
+            ) {
               isNull = true;
               nullArray.push(p);
             }
@@ -285,7 +286,7 @@
           // Add axis title
           .append("text")
           .style("text-anchor", "middle")
-          .attr("y", -9)
+          .attr("y", -15)
           .text(function (d) {
             return d;
           })
