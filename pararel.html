@@ -168,15 +168,16 @@
         const hasNullValue = (d) => {
           var isNull = false;
           var nullArray = [];
-          dimensions.map(function (p) {
-            if (
-              y[p](d[p]) === undefined ||
-              y[p](d[p]) === "na" ||
-              y[p](d[p]) === null
-            ) {
-              isNull = true;
-              nullArray.push(p);
-            }
+          dimensions.map((p, i) => {
+            if (i !== dimensions.length - 1)
+              if (
+                y[p](d[p]) === undefined ||
+                y[p](d[p]) === "na" ||
+                y[p](d[p]) === null
+              ) {
+                isNull = true;
+                nullArray.push(p);
+              }
           });
           console.log(isNull, nullArray);
           return [isNull, nullArray];
