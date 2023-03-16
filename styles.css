@@ -38,13 +38,6 @@ p {
   padding: 1em 1em 1em 0;
 }
 
-@media screen and (max-width: 768px) {
-  .flex-container {
-    -webkit-flex-flow: column nowrap;
-    justify-content: flex-start;
-    align-items: center;
-  }
-}
 /* navigation */
 .navigation a {
   text-decoration: none;
@@ -59,7 +52,7 @@ a {
   position: absolute;
   text-align: center;
   width: max-content;
-  max-width: 400px;
+  max-width: 300px;
   word-break: break-all;
   max-height: 150px;
   padding: 2px;

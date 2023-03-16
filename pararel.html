@@ -101,9 +101,9 @@
         // Extract the list of dimensions we want to keep in the plot. Here I keep all except the column called Species
         dimensions = Object.keys(data[0]).filter(function (d) {
           // TODO: implement future to make filter out columns wanted
-          return d != "Species";
           return d;
         });
+        lastColumn = dimensions.pop();
         select = document.getElementById("columnsSelection");
 
         // If select hasn't been populated yet, populate it
@@ -178,6 +178,7 @@
               nullArray.push(p);
             }
           });
+          console.log(isNull, nullArray);
           return [isNull, nullArray];
         };
         //mouse functions
@@ -186,12 +187,7 @@
           d3.select(this).style("stroke", "black").style("opacity", 1);
         };
         var mousemove = function (event, d) {
-          let jsonStringified = JSON.stringify(d);
-          jsonStringified = jsonStringified.replace(/{/g, "");
-          jsonStringified = jsonStringified.replace(/}/g, "");
-          jsonStringified = jsonStringified.replace(/"/g, "");
-
-          Tooltip.html("Data: " + jsonStringified)
+          Tooltip.html("Data: " + prepareData(d))
             .style("left", d3.pointer(event)[0] + 70 + "px")
             .style("top", d3.pointer(event)[1] + 70 + "px");
         };
