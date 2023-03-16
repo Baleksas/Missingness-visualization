@@ -4,7 +4,6 @@ const prepareData = (d) => {
   dimensions = Object.keys(d);
 
   for (let i = 0; i < dimensions.length; i++) {
-    console.log(dimensions[i]);
     if (i !== dimensions.length - 1) {
       d[dimensions[i]] = Math.round(d[dimensions[i]] * 100) / 100;
     }

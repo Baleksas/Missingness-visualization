@@ -19,7 +19,7 @@
   <script src="const.js"></script>
 
   <body>
-    <div class="navigation">
+    <div class="navigation-back">
       <a href="./visualization.html">Back</a>
     </div>
 
@@ -122,7 +122,6 @@
             .scaleLinear()
             .domain(
               d3.extent(data, function (d) {
-                // console.log(+d[name]);
                 return +d[name];
               })
             )
@@ -179,7 +178,6 @@
                 nullArray.push(p);
               }
           });
-          console.log(isNull, nullArray);
           return [isNull, nullArray];
         };
         //mouse functions
