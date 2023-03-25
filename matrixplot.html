@@ -30,14 +30,15 @@
   <script>
     // Dimension of the whole chart. Only one size since it has to be square
     const marginWhole = { top: 10, right: 10, bottom: 10, left: 10 },
-      sizeWhole = 1200 - marginWhole.left - marginWhole.right;
+      sizeWhole = 1200 - marginWhole.left - marginWhole.right,
+      sizeHeight = 600 - marginWhole.left - marginWhole.right;
 
     // Create the svg area
     const svg = d3
       .select("#my_dataviz")
       .append("svg")
       .attr("width", sizeWhole + marginWhole.left + marginWhole.right)
-      .attr("height", sizeWhole + marginWhole.top + marginWhole.bottom)
+      .attr("height", sizeHeight + marginWhole.top + marginWhole.bottom)
       .append("g")
       .attr("transform", `translate(${marginWhole.left},${marginWhole.top})`);
     const update = (data) => {
@@ -265,7 +266,7 @@
       }
     };
     // Zooming function
-    let zoom = d3.zoom().on("zoom", handleZoom);
+    let zoom = d3.zoom().on("zoom", handleZoom).scaleExtent([1, 5]);
 
     function handleZoom(e) {
       d3.select("svg g").attr("transform", e.transform);
