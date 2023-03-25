@@ -19,18 +19,18 @@
   <script src="const.js"></script>
 
   <body>
-    <div class="navigation-back">
-      <a href="./visualization.html">Back</a>
-    </div>
+    <nav>
+      <div class="navigation-back">
+        <a href="./visualization.html">Back</a>
+      </div>
 
-    <div class="flex-container">
       <div class="flex-item">
         <button onclick="update(false)">Show complete rows</button>
         <button onclick="update(true, true)">Show rows with missing</button>
 
         <button onclick="update()">Show all</button>
         <button onclick="remove()">Remove</button>
-        <label for="columns">Choose a column:</label>
+        <label for="columns">Missing from column:</label>
 
         <select
           onchange="update(true, false , true)"
@@ -39,14 +39,16 @@
         >
           <option value="" disabled selected>Select your option</option>
         </select>
-        <div id="my_dataviz"></div>
       </div>
-    </div>
+      <span id="missingNumber"></span>
+    </nav>
+
+    <div id="my_dataviz"></div>
   </body>
   <script>
     // set the dimensions and margins of the graph
     const margin = { top: 30, right: 10, bottom: 10, left: 0 },
-      width = 1400 - margin.left - margin.right,
+      width = 1200 - margin.left - margin.right,
       height = 600 - margin.top - margin.bottom;
 
     // append the svg object to the body of the page
@@ -149,6 +151,8 @@
 
         // The path function take a row of the csv as input, and return x and y coordinates of the line to draw for this raw.
         // Making coordinates of missing values to negative to be out displayed out of figure instead of being displayed at 0
+
+        var missingNumber = 0;
         function path(d) {
           return d3.line()(
             dimensions.map(function (p) {
@@ -157,13 +161,15 @@
                 y[p](d[p]) === "na" ||
                 y[p](d[p]) === null
               ) {
+                missingNumber++;
+
                 return [x(p), -10];
               }
+
               return [x(p), y[p](d[p])];
             })
           );
         }
-
         const hasNullValue = (d) => {
           var isNull = false;
           var nullArray = [];
@@ -180,6 +186,7 @@
           });
           return [isNull, nullArray];
         };
+
         //mouse functions
         var mouseover = function (d) {
           Tooltip.style("opacity", 1);
@@ -231,7 +238,7 @@
           .text("Rows with missing value(s)")
           .style("font-size", "12px")
           .attr("alignment-baseline", "middle");
-
+        var rowsWithNull = 0;
         // Draw the lines
         svg
           .selectAll("myPath")
@@ -248,8 +255,10 @@
               specificColumn &&
               !hasNullValue(d)[1].includes(columnSelected())
             ) {
+              console.log(hasNullValue(d));
               return null;
             }
+
             return hasNullValue(d)[0]
               ? complete
                 ? "red"
@@ -261,7 +270,7 @@
           .on("mouseover", mouseover)
           .on("mousemove", mousemove)
           .on("mouseleave", mouseleave);
-
+        console.log(rowsWithNull);
         // Draw the axis:
         svg
           .selectAll("myAxis")
@@ -286,6 +295,15 @@
             return d;
           })
           .style("fill", "black");
+        var parent = document.getElementById("missingNumber");
+        parent.innerHTML = "Total values missing: ";
+        var span = document.createElement("span");
+        span.style.width = "100px";
+        span.style.height = "100px";
+        span.style.color = "black";
+        span.innerHTML = `${missingNumber.toString()} `;
+
+        parent.appendChild(span);
       });
     }
   </script>

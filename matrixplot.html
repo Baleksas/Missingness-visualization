@@ -14,13 +14,17 @@
     <title>Matrix plot</title>
   </head>
   <script src="https://d3js.org/d3.v6.js"></script>
+  <script src="https://d3js.org/d3-axis.v1.min.js"></script>
+
   <script src="utils.js"></script>
   <script src="const.js"></script>
 
   <body>
-    <div class="navigation-back">
-      <a href="./visualization.html">Back</a>
-    </div>
+    <nav>
+      <div class="navigation-back">
+        <a href="./visualization.html">Back</a>
+      </div>
+    </nav>
     <div id="my_dataviz"></div>
   </body>
   <script>
@@ -36,7 +40,8 @@
       .attr("height", sizeWhole + marginWhole.top + marginWhole.bottom)
       .append("g")
       .attr("transform", `translate(${marginWhole.left},${marginWhole.top})`);
-    d3.csv(DATAFRAME_URL).then(function (data) {
+    const update = (data) => {
+      console.log(data);
       dimensions = Object.keys(data[0]);
       lastColumn = dimensions.pop();
       // What are the numeric variables in this dataset? How many do I have
@@ -87,6 +92,8 @@
             continue;
           }
 
+          // Create axes.
+
           // Add X Scale of each graph
           xextent = d3.extent(data, function (d) {
             return +d[var1];
@@ -118,6 +125,19 @@
             .nice()
             .range([size - 2 * mar, 0]);
 
+          //add test axis
+          const xAxis = d3.axisTop(x);
+          const yAxis = d3.axisRight(y);
+          const xAxisGrid = d3
+            .axisBottom(x)
+            .tickSize(size - mar * 2)
+            .tickFormat("");
+
+          const yAxisGrid = d3
+            .axisLeft(y)
+            .tickSize(-(size - mar * 2))
+            .tickFormat("");
+
           // Add a 'g' at the right position
           const tmp = svg
             .append("g")
@@ -130,7 +150,7 @@
           //2 x axis
           tmp
             .append("g")
-            .call(d3.axisBottom(x).ticks(0))
+            .call(d3.axisBottom(x).ticks(5))
             .attr("transform", `translate(0,${size - mar * 1.5})`);
 
           tmp
@@ -138,13 +158,13 @@
             .call(d3.axisBottom(x2).ticks(3))
             .attr("transform", `translate(0,${size - mar * 2})`);
 
-          //2 y axis
           tmp.append("g").call(d3.axisLeft(y).ticks(3));
 
           tmp
             .append("g")
-            .call(d3.axisLeft(y2).ticks(0))
-            .attr("transform", `translate(${-mar * 0.5},0)`);
+            .call(d3.axisLeft(y2).ticks(5))
+            .attr("transform", `translate(${-mar * 0.75},0)`);
+
           // mouse functions and tooltip
           var Tooltip = d3
             .select("#my_dataviz")
@@ -156,6 +176,20 @@
             .style("border-width", "2px")
             .style("border-radius", "5px")
             .style("padding", "5px");
+
+          tmp
+            .append("g")
+            .attr("class", "x axis-grid")
+            .attr("class", "grid")
+            .call(xAxisGrid);
+
+          tmp
+            .append("g")
+            .attr("class", "y axis-grid")
+            .attr("class", "grid")
+            .call(yAxisGrid);
+
+          // Mouse functions
           var mouseover = function (d) {
             Tooltip.style("opacity", 1);
             d3.select(this).style("stroke", "black").style("opacity", 1);
@@ -168,7 +202,6 @@
               .style("top", event.pageY + "px");
           };
           var mouseleave = function (d) {
-            // console.log("d last", d[dim]);
             Tooltip.style("opacity", 0);
             d3.select(this)
               .style("stroke", (d) => {
@@ -186,7 +219,7 @@
             .data(data)
             .join("circle")
             .attr("cx", function (d) {
-              if (x(+d[var1]) === undefined) return -mar + mar / 2;
+              if (x(+d[var1]) === undefined) return -mar + mar / 4;
               return x(+d[var1]);
             })
             .attr("cy", function (d) {
@@ -219,6 +252,7 @@
           // Add text
           const var1 = allVar[i];
           const var2 = allVar[j];
+
           svg
             .append("g")
             .attr("transform", `translate(${position(var1)},${position(var2)})`)
@@ -229,6 +263,32 @@
             .attr("text-anchor", "middle");
         }
       }
-    });
+    };
+    // Zooming function
+    let zoom = d3.zoom().on("zoom", handleZoom);
+
+    function handleZoom(e) {
+      d3.select("svg g").attr("transform", e.transform);
+    }
+
+    function initZoom() {
+      d3.select("svg").call(zoom);
+    }
+
+    function updateData() {
+      data = [];
+      for (let i = 0; i < numPoints; i++) {
+        data.push({
+          id: i,
+          x: Math.random() * width,
+          y: Math.random() * height,
+        });
+      }
+    }
+    d3.csv(DATAFRAME_URL).then(update);
+
+    initZoom();
+    updateData();
+    update();
   </script>
 </html>
