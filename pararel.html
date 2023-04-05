@@ -40,7 +40,10 @@
           <option value="" disabled selected>Select your option</option>
         </select>
       </div>
-      <span id="missingNumber"></span>
+      <div
+        style="display: flex; justify-content: space-around; height: 50px"
+        id="missingNumber"
+      ></div>
     </nav>
 
     <div id="my_dataviz"></div>
@@ -154,10 +157,13 @@
 
         var missingNumber = 0;
         var totalValues = 0;
+        var totalRows = 0;
+
         function path(d) {
-          totalValues++;
+          totalRows++;
           return d3.line()(
             dimensions.map(function (p) {
+              totalValues++;
               if (
                 y[p](d[p]) === undefined ||
                 y[p](d[p]) === "na" ||
@@ -247,7 +253,6 @@
           .text("Rows with missing value(s)")
           .style("font-size", "12px")
           .attr("alignment-baseline", "middle");
-        var rowsWithNull = 0;
         // Draw the lines
         svg
           .selectAll("myPath")
@@ -279,7 +284,6 @@
           .on("mouseover", mouseover)
           .on("mousemove", mousemove)
           .on("mouseleave", mouseleave);
-        console.log(rowsWithNull);
         // Draw the axis:
         svg
           .selectAll("myAxis")
@@ -318,10 +322,17 @@
           span2.style.color = "black";
           span2.innerHTML = `Total values: ${totalValues.toString()} `;
 
+          var span3 = document.createElement("span");
+          span3.style.width = "100px";
+          span3.style.height = "100px";
+          span3.style.color = "black";
+          span3.innerHTML = `Total rows: ${totalRows.toString()} `;
+
           var br = document.createElement("br");
+
           parent.appendChild(span);
-          parent.appendChild(br);
           parent.appendChild(span2);
+          parent.appendChild(span3);
         }
       });
     }

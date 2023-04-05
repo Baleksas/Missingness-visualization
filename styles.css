@@ -13,10 +13,20 @@ a {
   background: #ffffff;
   color: #67809f;
   width: max-content;
-  min-width: 90%;
+  width: max-content;
   margin: 0 auto;
   height: 100%;
   border: 1px solid black;
+}
+#matrixplot_vis {
+  background: #ffffff;
+  color: #67809f;
+  width: max-content;
+  width: max-content;
+  margin: 0 auto;
+  height: 100%;
+  border: 1px solid black;
+  cursor: zoom-in;
 }
 
 nav {
